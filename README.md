@@ -1,4 +1,7 @@
 # JohnGalt
+## Who is John Galt?
+heh.
+## What is John Galt?
 An open source solution for using git-ops on a non orquestrated container environment.
 
 # Roadmap
