@@ -8,9 +8,18 @@ import (
 	"encoding/json"
 
 	"github.com/gorilla/mux"
-	"github.com/libgit2/git2go"
-	// "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
+
+func CheckIfError(err error) {
+	if err == nil {
+		return
+	}
+
+	fmt.Printf("\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf("error: %s", err))
+	os.Exit(1)
+}
 
 func homeLink(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Who is John Galt?")
@@ -32,6 +41,22 @@ func pullUpdates(gitUrl *string) {
 	// Check if folder exists in file system
 	// if it does not, clone it
 	// if it does, pull the new version
+	// For now, assume the repo is already downloaded
+	var prevCommit *object.Commit;
+	var prevTree *object.Tree;
+
+	var currentCommit *object.Commit;
+	var currentTree *object.Tree;
+	// Pull changes
+	r, err := git.PlainOpen("./.git");
+	CheckIfError(err);
+	w, err := r.Worktree();
+	CheckIfError(err);
+	err = w.Pull(&git.PullOptions{RemoteName: "origin"});
+	CheckIfError(err);
+
+	commits, err := repo.Log({}) //This returns a CommitIterator
+	defer commits.Close();
 
 	// Get the info from the yaml conf
 	// Apply using docker sdk
