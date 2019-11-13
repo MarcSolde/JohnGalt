@@ -37,6 +37,21 @@ func gitWebhook(w http.ResponseWriter, r *http.Request) {
 	pullUpdates(&gitUrl);
 }
 
+func getTree() {
+	r, err := git.PlainOpen("./.git");
+	CheckIfError(err);
+	w, err := r.Worktree();
+	CheckIfError(err);
+	ref, err := r.Head();
+	CheckIfError(err);
+	hash, err := ref.Hash();
+	CheckIfError(err);
+	commit, err := r.CommitObject(hash);
+	CheckIfError(err);
+	tree, err := commit.Tree()
+	return tree;
+}
+
 func pullUpdates(gitUrl *string) {
 	// Check if folder exists in file system
 	// if it does not, clone it
@@ -48,16 +63,17 @@ func pullUpdates(gitUrl *string) {
 	var currentCommit *object.Commit;
 	var currentTree *object.Tree;
 	// Pull changes
+	oldTree:= getTree();
 	r, err := git.PlainOpen("./.git");
 	CheckIfError(err);
 	w, err := r.Worktree();
 	CheckIfError(err);
 	err = w.Pull(&git.PullOptions{RemoteName: "origin"});
 	CheckIfError(err);
-
+	newTree := getTree();
 	commits, err := repo.Log({}) //This returns a CommitIterator
 	defer commits.Close();
-
+	diff := newTree.Diff(oldTree); // Maybe compare the other way around
 	// Get the info from the yaml conf
 	// Apply using docker sdk
 
